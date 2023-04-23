@@ -33,14 +33,9 @@ func (s *Shader) IsUpdated() bool {
 	return fInfo.ModTime().After(s.lastCompiled)
 }
 
-const (
-	VERTEX_SHADER = iota
-	FRAGMENT_SHADER
-)
-
 type Program struct {
 	ID      uint32
-	shaders map[uint32]*Shader
+	shaders []*Shader
 }
 
 func getShaderIds(program Program) []uint32 {
@@ -51,17 +46,34 @@ func getShaderIds(program Program) []uint32 {
 	return ids
 }
 
-// TODO Implement using ... Operator
-func CreateProgramStructFromPaths(shaderTypes []uint32, shaderPaths ...string) (Program, error) {
-	result := Program{
-		shaders: make(map[uint32]*Shader),
+func CreateProgramStruct(shaders ...*Shader) (Program, error) {
+	result := Program{}
+	for _, shader := range shaders {
+		s, err := CreateShaderStruct(shader.path, shader.shaderType)
+		if err != nil {
+			return Program{}, err
+		}
+		result.shaders = append(result.shaders, &s)
 	}
+	ids := getShaderIds(result)
+
+	pId, err := CreateProgram(ids...)
+	if err != nil {
+		return Program{}, err
+	}
+
+	result.ID = pId
+	return result, nil
+}
+
+func CreateProgramStructFromPaths(shaderTypes []uint32, shaderPaths ...string) (Program, error) {
+	result := Program{}
 	for idx, shaderType := range shaderTypes {
 		s, err := CreateShaderStruct(shaderPaths[idx], shaderType)
 		if err != nil {
 			return Program{}, err
 		}
-		result.shaders[shaderType] = &s
+		result.shaders = append(result.shaders, &s)
 	}
 	ids := getShaderIds(result)
 
@@ -78,8 +90,7 @@ func (p *Program) ReloadProgram() {
 
 	gl.DeleteProgram(p.ID)
 
-	*p, _ = CreateProgramStructFromPaths([]uint32{gl.VERTEX_SHADER, gl.FRAGMENT_SHADER},
-		p.shaders[gl.VERTEX_SHADER].path, p.shaders[gl.FRAGMENT_SHADER].path)
+	*p, _ = CreateProgramStruct(p.shaders...)
 }
 
 func (p *Program) IsUpdated() bool {
