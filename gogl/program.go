@@ -1,103 +1,123 @@
 package gogl
 
-import (
-	"os"
-	"time"
+// import (
+// 	"errors"
+// 	"os"
+// 	"strings"
+// 	"time"
 
-	"github.com/go-gl/gl/v3.3-core/gl"
-)
+// 	"github.com/go-gl/gl/v3.3-core/gl"
+// )
 
-type Shader struct {
-	ID           uint32
-	shaderType   uint32
-	path         string
-	lastCompiled time.Time
-}
+// type Shader struct {
+// 	ID           uint32
+// 	shaderType   uint32
+// 	path         string
+// 	lastModified time.Time
+// }
 
-func CreateShaderStruct(path string, shaderType uint32) (Shader, error) {
-	sId, err := LoadShader(path, shaderType)
-	if err != nil {
-		return Shader{}, err
-	}
+// func CreateShader(path string, shaderType uint32) (*Shader, error) {
+// 	shaderCode, err := os.ReadFile(path)
 
-	return Shader{
-		ID:           sId,
-		shaderType:   shaderType,
-		path:         path,
-		lastCompiled: time.Time{},
-	}, nil
-}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-func (s *Shader) IsUpdated() bool {
-	fInfo, _ := os.Stat(s.path)
-	return fInfo.ModTime().After(s.lastCompiled)
-}
+// 	shaderId := gl.CreateShader(shaderType)
+// 	cSource, free := gl.Strs(string(shaderCode) + "\x00")
+// 	gl.ShaderSource(shaderId, 1, cSource, nil)
+// 	defer free()
+// 	gl.CompileShader(shaderId)
+// 	var glErr int32
+// 	gl.GetShaderiv(shaderId, gl.COMPILE_STATUS, &glErr)
+// 	if glErr == gl.FALSE {
+// 		var logLength int32
+// 		gl.GetShaderiv(shaderId, gl.INFO_LOG_LENGTH, &logLength)
+// 		log := string(make([]byte, logLength+1))
+// 		gl.GetShaderInfoLog(shaderId, logLength, nil, gl.Str(log))
+// 		return nil, errors.New("Error Failed to compile shader:\n" + log)
+// 	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	fileInfo, _ := os.Stat(path)
 
-type Program struct {
-	ID      uint32
-	shaders []*Shader
-}
+// 	return &Shader{
+// 		ID:           shaderId,
+// 		shaderType:   shaderType,
+// 		path:         path,
+// 		lastModified: fileInfo.ModTime(),
+// 	}, nil
+// }
 
-func getShaderIds(program Program) []uint32 {
-	ids := []uint32{}
-	for _, shader := range program.shaders {
-		ids = append(ids, shader.ID)
-	}
-	return ids
-}
+// func (s *Shader) IsUpdated() bool {
+// 	fInfo, _ := os.Stat(s.path)
+// 	return fInfo.ModTime().After(s.lastModified)
+// }
 
-func CreateProgramStruct(shaders ...*Shader) (Program, error) {
-	result := Program{}
-	for _, shader := range shaders {
-		s, err := CreateShaderStruct(shader.path, shader.shaderType)
-		if err != nil {
-			return Program{}, err
-		}
-		result.shaders = append(result.shaders, &s)
-	}
-	ids := getShaderIds(result)
+// type Program struct {
+// 	ID      uint32
+// 	shaders []*Shader
+// }
 
-	pId, err := CreateProgram(ids...)
-	if err != nil {
-		return Program{}, err
-	}
+// func CreateProgram(shaders ...*Shader) (Program, error) {
+// 	result := Program{}
+// 	pId := gl.CreateProgram()
+// 	for _, shader := range shaders {
+// 		gl.AttachShader(pId, shader.ID)
+// 		result.shaders = append(result.shaders, shader)
+// 	}
 
-	result.ID = pId
-	return result, nil
-}
+// 	gl.LinkProgram(pId)
+// 	var status int32
+// 	gl.GetProgramiv(pId, gl.LINK_STATUS, &status)
+// 	if status == gl.FALSE {
+// 		var logLength int32
+// 		gl.GetProgramiv(pId, gl.INFO_LOG_LENGTH, &logLength)
+// 		log := strings.Repeat("\x00", int(logLength)+1)
+// 		gl.GetProgramInfoLog(pId, logLength, nil, gl.Str(log))
+// 		return Program{}, errors.New(log)
+// 	}
 
-func CreateProgramStructFromPaths(shaderTypes []uint32, shaderPaths ...string) (Program, error) {
-	result := Program{}
-	for idx, shaderType := range shaderTypes {
-		s, err := CreateShaderStruct(shaderPaths[idx], shaderType)
-		if err != nil {
-			return Program{}, err
-		}
-		result.shaders = append(result.shaders, &s)
-	}
-	ids := getShaderIds(result)
+// 	for _, shader := range shaders {
+// 		gl.DeleteShader(shader.ID)
+// 	}
 
-	pId, err := CreateProgram(ids...)
-	if err != nil {
-		return Program{}, err
-	}
+// 	result.ID = pId
+// 	return result, nil
+// }
 
-	result.ID = pId
-	return result, nil
-}
+// func (p *Program) ReloadProgram() {
+// 	shaders := []*Shader{}
+// 	pId := gl.CreateProgram()
+// 	for _, v := range p.shaders {
+// 		v, err := CreateShader(v.path, v.shaderType)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 		shaders = append(shaders, v)
+// 		gl.AttachShader(pId, v.ID)
+// 	}
+// 	gl.LinkProgram(pId)
+// 	var status int32
+// 	gl.GetProgramiv(pId, gl.LINK_STATUS, &status)
+// 	if status == gl.FALSE {
+// 		var logLength int32
+// 		gl.GetProgramiv(pId, gl.INFO_LOG_LENGTH, &logLength)
+// 		log := strings.Repeat("\x00", int(logLength)+1)
+// 		gl.GetProgramInfoLog(pId, logLength, nil, gl.Str(log))
+// 		panic(log)
+// 		// return Program{}, errors.New(log)
+// 	}
+// 	p.ID = pId
+// 	p.shaders = shaders
+// }
 
-func (p *Program) ReloadProgram() {
-
-	gl.DeleteProgram(p.ID)
-
-	*p, _ = CreateProgramStruct(p.shaders...)
-}
-
-func (p *Program) IsUpdated() bool {
-	for _, shader := range p.shaders {
-		if shader.IsUpdated() {
-			return true
-		}
-	}
-	return false
-}
+// func (p *Program) IsUpdated() bool {
+// 	for _, shader := range p.shaders {
+// 		if shader.IsUpdated() {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }

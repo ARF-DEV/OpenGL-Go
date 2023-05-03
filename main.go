@@ -43,35 +43,24 @@ func main() {
 	window.SetFramebufferSizeCallback(callbacks.FrameBufferSizeCallback)
 	window.SetKeyCallback(callbacks.KeyCallback)
 
-	// vertexShader, err := gogl.LoadShader("./shaders/vertex.vert", gl.VERTEX_SHADER)
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// fragmentShader, err := gogl.LoadShader("./shaders/fragment.frag", gl.FRAGMENT_SHADER)
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	shaderProgram, err := gogl.CreateProgramStructFromPaths(
-		[]uint32{gl.VERTEX_SHADER, gl.FRAGMENT_SHADER},
-		"./shaders/vertex.vert", "./shaders/fragment.frag",
+	shaderProgram, err := gogl.CreateShader(
+		"./shaders/vertex.vs", "./shaders/fragment.fs",
 	)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	vertices := []float32{
-		0.5, 0.5, 0.0, // top right
+		0.0, 0.5, 0.0, // top right
 		0.5, -0.5, 0.0, // bottom right
 		-0.5, -0.5, 0.0, // bottom let
-		-0.5, 0.5, 0.0, // top left
+		// -0.5, 0.5, 0.0, // top left
 
 	}
 
 	indices := []uint32{ // note that we start from 0!
-		0, 1, 3, // first triangle
-		1, 2, 3} // second triangle
+		0, 1, 2} // first triangle
+	// 1, 2, 3} // second triangle
 
 	var VAO uint32
 	gl.GenVertexArrays(1, &VAO)
@@ -89,22 +78,31 @@ func main() {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*4, nil)
 	gl.EnableVertexAttribArray(0)
 
-	gl.UseProgram(shaderProgram.ID)
+	// gl.UseProgram(shaderProgram.ID)
 	for !window.ShouldClose() {
+		shaderProgram.ReloadOnUpdate()
 		// input
 
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+		gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.BindVertexArray(VAO)
+		gl.UseProgram(shaderProgram.ID)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 		gl.BindVertexArray(0)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
-		if shaderProgram.IsUpdated() {
-			shaderProgram.ReloadProgram()
-			gl.UseProgram(shaderProgram.ID)
+		// if shaderProgram.IsUpdated() {
+		// 	fmt.Println("BERUBAH")
+		// 	shaderProgram.ReloadProgram()
+		// }
+		// if shaderProgram.IsUpdated() {
+		// 	shaderProgram
+		// }
+		err := gl.GetError()
+		if err != gl.NO_ERROR {
+			panic(err)
 		}
 	}
 
