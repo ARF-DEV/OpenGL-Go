@@ -14,7 +14,7 @@ type Texture struct {
 	ID uint32
 }
 
-func CreateTextureFromFile(file string) (*Texture, error) {
+func CreateTextureFromFile(file string, WrapMode, MagFilter, MinFilter int32, flip bool) (*Texture, error) {
 	imageFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -26,16 +26,26 @@ func CreateTextureFromFile(file string) (*Texture, error) {
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
-	draw.Draw(rgba, img.Bounds(), img, image.Pt(0, 0), draw.Src)
+	if flip {
+		width := img.Bounds().Max.X
+		height := img.Bounds().Max.Y
+		for i := 0; i < height; i++ {
+			for j := 0; j < width; j++ {
+				rgba.Set(j, i, img.At(j, img.Bounds().Max.Y-1-i))
+			}
+		}
+	} else {
+		draw.Draw(rgba, img.Bounds(), img, image.Pt(0, 0), draw.Src)
+	}
 
 	var tex uint32
 	gl.GenTextures(1, &tex)
 	gl.BindTexture(gl.TEXTURE_2D, tex)
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, WrapMode)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, WrapMode)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, MagFilter)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, MinFilter)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(img.Bounds().Size().X), int32(img.Bounds().Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
 	gl.GenerateMipmap(gl.TEXTURE_2D)
 

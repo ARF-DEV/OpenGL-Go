@@ -55,10 +55,10 @@ func main() {
 
 	vertices := []float32{
 		// positions          // colors           // texture coords
-		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
-		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
+		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0, // top right
+		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, // bottom right
 		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-		-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
+		-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0, // top left
 
 	}
 
@@ -66,13 +66,13 @@ func main() {
 		0, 1, 3, // first triangle
 		1, 2, 3} // second triangle
 
-	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg")
+	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg", gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, false)
 	if err != nil {
 		log.Println("Failed to create texture: ", err.Error())
 		return
 	}
 
-	faceTexture, err := gogl.CreateTextureFromFile("images/awesomeface.png")
+	faceTexture, err := gogl.CreateTextureFromFile("images/awesomeface.png", gl.REPEAT, gl.NEAREST, gl.NEAREST, true)
 	if err != nil {
 		log.Println("Failed to create texture: ", err.Error())
 		return
@@ -113,9 +113,9 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, boxTexture.ID)
+		boxTexture.Bind()
 		gl.ActiveTexture(gl.TEXTURE1)
-		gl.BindTexture(gl.TEXTURE_2D, faceTexture.ID)
+		faceTexture.Bind()
 
 		gl.BindVertexArray(VAO)
 		gl.UseProgram(shaderProgram.ID)
@@ -124,13 +124,7 @@ func main() {
 
 		window.SwapBuffers()
 		glfw.PollEvents()
-		// if shaderProgram.IsUpdated() {
-		// 	fmt.Println("BERUBAH")
-		// 	shaderProgram.ReloadProgram()
-		// }
-		// if shaderProgram.IsUpdated() {
-		// 	shaderProgram
-		// }
+
 		err := gl.GetError()
 		if err != gl.NO_ERROR {
 			log.Println(err)
