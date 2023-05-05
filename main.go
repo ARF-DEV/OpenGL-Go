@@ -2,14 +2,11 @@ package main
 
 import (
 	"fmt"
-	"image"
-	"image/draw"
 	_ "image/jpeg"
 	_ "image/png"
 	"learn-open-gl/callbacks"
 	"learn-open-gl/gogl"
 	"log"
-	"os"
 	"runtime"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -69,51 +66,17 @@ func main() {
 		0, 1, 3, // first triangle
 		1, 2, 3} // second triangle
 
-	borderColor := []float32{
-		1.0, 1.0, 0.0, 1.0,
-	}
-
-	imageFile, _ := os.Open("./images/container.jpg")
-	img, _, err := image.Decode(imageFile)
+	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg")
 	if err != nil {
-		panic("Failed to decode image: " + err.Error())
+		log.Println("Failed to create texture: ", err.Error())
+		return
 	}
-	rgba := image.NewRGBA(img.Bounds())
-	draw.Draw(rgba, rgba.Rect, img, image.Pt(0, 0), draw.Src)
 
-	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-	gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, (*float32)(gl.Ptr(borderColor)))
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(img.Bounds().Size().X), int32(img.Bounds().Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
-	gl.GenerateMipmap(gl.TEXTURE_2D)
-
-	imageFileFace, _ := os.Open("./images/awesomeface.png")
-	img2, _, err := image.Decode(imageFileFace)
+	faceTexture, err := gogl.CreateTextureFromFile("images/awesomeface.png")
 	if err != nil {
-		panic("Failed to decode image: " + err.Error())
+		log.Println("Failed to create texture: ", err.Error())
+		return
 	}
-	rgba2 := image.NewRGBA(img2.Bounds())
-	draw.Draw(rgba2, rgba2.Rect, img2, image.Pt(0, 0), draw.Src)
-
-	var texture2 uint32
-	gl.GenTextures(1, &texture2)
-	gl.BindTexture(gl.TEXTURE_2D, texture2)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-	gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, (*float32)(gl.Ptr(borderColor)))
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(img.Bounds().Size().X), int32(img.Bounds().Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba2.Pix))
-	gl.GenerateMipmap(gl.TEXTURE_2D)
 
 	var VAO uint32
 	gl.GenVertexArrays(1, &VAO)
@@ -146,13 +109,13 @@ func main() {
 		shaderProgram.ReloadOnUpdate()
 		// input
 
-		gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, texture)
+		gl.BindTexture(gl.TEXTURE_2D, boxTexture.ID)
 		gl.ActiveTexture(gl.TEXTURE1)
-		gl.BindTexture(gl.TEXTURE_2D, texture2)
+		gl.BindTexture(gl.TEXTURE_2D, faceTexture.ID)
 
 		gl.BindVertexArray(VAO)
 		gl.UseProgram(shaderProgram.ID)
