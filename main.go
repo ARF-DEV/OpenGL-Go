@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func main() {
@@ -54,19 +55,55 @@ func main() {
 	}
 
 	vertices := []float32{
-		// positions          // colors           // texture coords
-		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0, // top right
-		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, // bottom right
-		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-		-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0, // top left
+		// positions  // texture coords
+		-0.5, -0.5, -0.5, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0,
 
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 1.0,
+		0.5, 0.5, 0.5, 1.0, 1.0,
+		-0.5, 0.5, 0.5, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+
+		-0.5, 0.5, 0.5, 1.0, 0.0,
+		-0.5, 0.5, -0.5, 1.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		-0.5, 0.5, 0.5, 1.0, 0.0,
+
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, 0.5, 0.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, -0.5, 1.0, 1.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+
+		-0.5, 0.5, -0.5, 0.0, 1.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		-0.5, 0.5, 0.5, 0.0, 0.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0,
 	}
 
 	indices := []uint32{ // note that we start from 0!
 		0, 1, 3, // first triangle
 		1, 2, 3} // second triangle
 
-	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg", gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, false)
+	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg", gl.REPEAT, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, false)
 	if err != nil {
 		log.Println("Failed to create texture: ", err.Error())
 		return
@@ -92,25 +129,58 @@ func main() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, VBO)
 	gl.BufferData(gl.ARRAY_BUFFER, 4*len(vertices), gl.Ptr(vertices), gl.STATIC_DRAW)
 
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 8*4, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 5*4, nil)
 	gl.EnableVertexAttribArray(0)
 
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 8*4, 3*4)
+	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
 	gl.EnableVertexAttribArray(1)
-
-	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, 8*4, 6*4)
-	gl.EnableVertexAttribArray(2)
 
 	gl.UseProgram(shaderProgram.ID)
 	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture1\x00")), 0)
 	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture2\x00")), 1)
 
+	// Vector stuff
+	// {
+	// 	vec := mgl32.Vec4{1.0, 0.0, 0.0, 1.0}
+	// 	trans := mgl32.Translate3D(1.0, 1.0, 0.0)
+	// 	result := trans.Mul4x1(vec)
+	// 	fmt.Printf("%f, %f, %f\n", result.X(), result.Y(), result.Z())
+	// }
+
+	// Model matrix is where the position, scale, and rotation of the object is defined
+	view := mgl32.Translate3D(0, 0, -3)
+
+	projection := mgl32.Perspective(mgl32.DegToRad(45.0), 800.0/600.0, 0.1, 100.0)
+	projectionLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLoc, 1, false, &projection[0])
+
+	cubePositions := []mgl32.Vec3{
+		{0.0, 0.0, 0.0},
+		{2.0, 5.0, -15.0},
+		{-1.5, -2.2, -2.5},
+		{-3.8, -2.0, -12.3},
+		{2.4, -0.4, -3.5},
+		{-1.7, 3.0, -7.5},
+		{1.3, -2.0, -2.5},
+		{1.5, 2.0, -2.5},
+		{1.5, 0.2, -1.5},
+		{-1.3, 1.0, -1.5},
+	}
+
+	gl.Enable(gl.DEPTH_TEST)
 	for !window.ShouldClose() {
 		shaderProgram.ReloadOnUpdate()
 		// input
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+		// Update Position
+
+		modelLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("model\x00"))
+		viewLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("view\x00"))
+
+		gl.UniformMatrix4fv(viewLoc, 1, false, &view[0])
 
 		gl.ActiveTexture(gl.TEXTURE0)
 		boxTexture.Bind()
@@ -119,7 +189,20 @@ func main() {
 
 		gl.BindVertexArray(VAO)
 		gl.UseProgram(shaderProgram.ID)
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		// gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		for i, pos := range cubePositions {
+			posMat := mgl32.Translate3D(pos.X(), pos.Y(), pos.Z())
+			var rotMat mgl32.Mat4
+			if i%3 == 0 {
+				rotMat = mgl32.HomogRotate3D(mgl32.DegToRad(float32(i)*20.0)+float32(glfw.GetTime()), mgl32.Vec3{1.0, 0.3, 0.5}.Normalize())
+			} else {
+				rotMat = mgl32.HomogRotate3D(mgl32.DegToRad(float32(i)*20.0), mgl32.Vec3{1.0, 0.3, 0.5}.Normalize())
+			}
+			model := posMat.Mul4(rotMat)
+			gl.UniformMatrix4fv(modelLoc, 1, false, &model[0])
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
+
 		gl.BindVertexArray(0)
 
 		window.SwapBuffers()
