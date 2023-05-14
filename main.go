@@ -5,6 +5,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"learn-open-gl/callbacks"
+	"learn-open-gl/engine"
 	"learn-open-gl/gogl"
 	"log"
 	"runtime"
@@ -13,6 +14,9 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
+
+var deltaTime = 0.0
+var lastFrame = 0.0
 
 func main() {
 	runtime.LockOSThread()
@@ -46,6 +50,39 @@ func main() {
 
 	window.SetFramebufferSizeCallback(callbacks.FrameBufferSizeCallback)
 	window.SetKeyCallback(callbacks.KeyCallback)
+	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+
+	// Camera thing
+	fov := 45.0
+	mainCamera := engine.CreateDefaultCamera()
+	firstMouse := true
+	var xLast float64 = 300
+	var yLast float64 = 400
+
+	window.SetCursorPosCallback(func(w *glfw.Window, xpos, ypos float64) {
+
+		if firstMouse {
+			xLast = xpos
+			yLast = ypos
+			firstMouse = false
+		}
+		xOffset := xpos - xLast
+		yOffset := yLast - ypos
+		xLast = xpos
+		yLast = ypos
+
+		mainCamera.ProcessMouseMovement(float32(xOffset), float32(yOffset))
+	})
+
+	window.SetScrollCallback(func(w *glfw.Window, xoff, yoff float64) {
+		fov -= yoff
+		if fov < 1 {
+			fov = 1
+		}
+		if fov > 45 {
+			fov = 45
+		}
+	})
 
 	shaderProgram, err := gogl.CreateShader(
 		"./shaders/vertex.vs", "./shaders/fragment.fs",
@@ -139,18 +176,9 @@ func main() {
 	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture1\x00")), 0)
 	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture2\x00")), 1)
 
-	// Vector stuff
-	// {
-	// 	vec := mgl32.Vec4{1.0, 0.0, 0.0, 1.0}
-	// 	trans := mgl32.Translate3D(1.0, 1.0, 0.0)
-	// 	result := trans.Mul4x1(vec)
-	// 	fmt.Printf("%f, %f, %f\n", result.X(), result.Y(), result.Z())
-	// }
-
-	// Model matrix is where the position, scale, and rotation of the object is defined
 	view := mgl32.Translate3D(0, 0, -3)
 
-	projection := mgl32.Perspective(mgl32.DegToRad(45.0), 800.0/600.0, 0.1, 100.0)
+	projection := mgl32.Perspective(mgl32.DegToRad(float32(fov)), 800.0/600.0, 0.1, 100.0)
 	projectionLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("projection\x00"))
 	gl.UniformMatrix4fv(projectionLoc, 1, false, &projection[0])
 
@@ -167,10 +195,42 @@ func main() {
 		{-1.3, 1.0, -1.5},
 	}
 
+	// Creating Camera View Matrix
+	// cameraPos := mgl32.Vec3{0, 0, 3}
+	// cameraTarget := mgl32.Vec3{0, 0, 0}
+	// The name direction vector is not the best chosen name, since it is actually pointing in the reverse direction of what it is targeting.
+	// https://stackoverflow.com/questions/60362629/confusion-on-opengls-camera-and-camera-space-transformation
+	// cameraDirection := cameraPos.Sub(cameraTarget).Normalize()
+	// cameraRight := mgl32.Vec3{0, 1, 0}.Cross(cameraDirection)
+	// cameraUp := cameraDirection.Cross(cameraRight)
+
+	//
+
 	gl.Enable(gl.DEPTH_TEST)
+
 	for !window.ShouldClose() {
+		currentFrame := glfw.GetTime()
+		deltaTime = currentFrame - lastFrame
+		lastFrame = currentFrame
+
 		shaderProgram.ReloadOnUpdate()
 		// input
+		if window.GetKey(glfw.KeyW) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.FORWARD, float32(deltaTime))
+		}
+		if window.GetKey(glfw.KeyS) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.BACKWARD, float32(deltaTime))
+		}
+		if window.GetKey(glfw.KeyA) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.LEFT, float32(deltaTime))
+		}
+		if window.GetKey(glfw.KeyD) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.RIGHT, float32(deltaTime))
+		}
+
+		if window.GetKey(glfw.KeyEscape) == glfw.Press {
+			window.SetShouldClose(true)
+		}
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -179,7 +239,7 @@ func main() {
 
 		modelLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("model\x00"))
 		viewLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("view\x00"))
-
+		view = mainCamera.GetLookUpMatrix()
 		gl.UniformMatrix4fv(viewLoc, 1, false, &view[0])
 
 		gl.ActiveTexture(gl.TEXTURE0)
@@ -214,5 +274,4 @@ func main() {
 			panic(err)
 		}
 	}
-
 }
