@@ -21,7 +21,6 @@ type Shader struct {
 }
 
 func (s *Shader) IsUpdated() bool {
-
 	vertexModTime, _ := getFileModifiedTime(s.vertexShader)
 	fragModTime, _ := getFileModifiedTime(s.fragmentShader)
 
@@ -33,8 +32,8 @@ func (s *Shader) ReloadOnUpdate() {
 	if !s.IsUpdated() {
 		return
 	}
-	log.Println("Updated")
 
+	log.Println("Updated")
 	count := 0
 	for {
 
@@ -86,10 +85,6 @@ func CreateShader(vertexShaderPath string, fragmentShaderPath string) (*Shader, 
 		fmt.Println(err)
 		return nil, err
 	}
-	vif, _ := getFileInfo(vertexShaderPath)
-	fmt.Println("Vertex Shader: ")
-	fmt.Println(vif.Size())
-	// fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 	cStr, free := gl.Strs(string(vSource) + "\x00")
 	gl.ShaderSource(vertexId, 1, cStr, nil)
 	gl.CompileShader(vertexId)
@@ -107,10 +102,6 @@ func CreateShader(vertexShaderPath string, fragmentShaderPath string) (*Shader, 
 		fmt.Println(err)
 		return nil, err
 	}
-	fif, _ := getFileInfo(fragmentShaderPath)
-	fmt.Println("Frag Shader: ")
-	fmt.Println(fif.Size())
-	// fmt.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 	cStr, free = gl.Strs(string(fSource) + "\x00")
 	gl.ShaderSource(fragmentId, 1, cStr, nil)
 	gl.CompileShader(fragmentId)
@@ -155,13 +146,13 @@ func getFileSize(file string) (int64, error) {
 	return fInfo.Size(), nil
 }
 
-func getFileInfo(file string) (os.FileInfo, error) {
-	fInfo, err := os.Stat(file)
-	if err != nil {
-		return nil, err
-	}
-	return fInfo, nil
-}
+// func getFileInfo(file string) (os.FileInfo, error) {
+// 	fInfo, err := os.Stat(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return fInfo, nil
+// }
 
 func getFileModifiedTime(file string) (time.Time, error) {
 	fInfo, err := os.Stat(file)
@@ -182,4 +173,11 @@ func getShaderParam(shaderId uint32, pName uint32) int32 {
 	var res int32
 	gl.GetShaderiv(shaderId, pName, &res)
 	return res
+}
+func (s *Shader) SetUniformFloat(name string, value float32) {
+	gl.Uniform1f(gl.GetUniformLocation(s.ID, gl.Str(name+"\x00")), value)
+}
+
+func (s *Shader) SetUniformInt(name string, value int32) {
+	gl.Uniform1i(gl.GetUniformLocation(s.ID, gl.Str(name+"\x00")), value)
 }
