@@ -90,6 +90,12 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	lightShaderProgram, err := gogl.CreateShader(
+		"./shaders/vertex.vs", "./shaders/fragment1.fs",
+	)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	vertices := []float32{
 		// positions  // texture coords
@@ -140,17 +146,17 @@ func main() {
 		0, 1, 3, // first triangle
 		1, 2, 3} // second triangle
 
-	boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg", gl.REPEAT, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, false)
-	if err != nil {
-		log.Println("Failed to create texture: ", err.Error())
-		return
-	}
+	// boxTexture, err := gogl.CreateTextureFromFile("images/container.jpg", gl.REPEAT, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, false)
+	// if err != nil {
+	// 	log.Println("Failed to create texture: ", err.Error())
+	// 	return
+	// }
 
-	faceTexture, err := gogl.CreateTextureFromFile("images/awesomeface.png", gl.REPEAT, gl.NEAREST, gl.NEAREST, true)
-	if err != nil {
-		log.Println("Failed to create texture: ", err.Error())
-		return
-	}
+	// faceTexture, err := gogl.CreateTextureFromFile("images/awesomeface.png", gl.REPEAT, gl.NEAREST, gl.NEAREST, true)
+	// if err != nil {
+	// 	log.Println("Failed to create texture: ", err.Error())
+	// 	return
+	// }
 
 	var VAO uint32
 	gl.GenVertexArrays(1, &VAO)
@@ -169,32 +175,61 @@ func main() {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 5*4, nil)
 	gl.EnableVertexAttribArray(0)
 
-	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
-	gl.EnableVertexAttribArray(1)
+	// gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
+	// gl.EnableVertexAttribArray(1)
 
-	gl.UseProgram(shaderProgram.ID)
-	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture1\x00")), 0)
-	gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture2\x00")), 1)
+	// gl.UseProgram(shaderProgram.ID)
+	// gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture1\x00")), 0)
+	// gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture2\x00")), 1)
+	// gl.BindVertexArray(0)
+
+	var lightVBO uint32
+	gl.GenBuffers(1, &lightVBO)
+	gl.BindBuffer(gl.ARRAY_BUFFER, lightVBO)
+	gl.BufferData(gl.ARRAY_BUFFER, 4*len(vertices), gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	var lightVAO uint32
+	gl.GenVertexArrays(1, &lightVAO)
+	gl.BindVertexArray(lightVAO)
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 5*4, 0)
+	// gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
+	gl.EnableVertexAttribArray(0)
+	// gl.EnableVertexAttribArray(1)
+
+	gl.BindVertexArray(0)
 
 	view := mgl32.Translate3D(0, 0, -3)
 
+	gl.UseProgram(shaderProgram.ID)
 	projection := mgl32.Perspective(mgl32.DegToRad(float32(fov)), 800.0/600.0, 0.1, 100.0)
 	projectionLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("projection\x00"))
 	gl.UniformMatrix4fv(projectionLoc, 1, false, &projection[0])
+	checkError("OAPAA")
 
-	cubePositions := []mgl32.Vec3{
-		{0.0, 0.0, 0.0},
-		{2.0, 5.0, -15.0},
-		{-1.5, -2.2, -2.5},
-		{-3.8, -2.0, -12.3},
-		{2.4, -0.4, -3.5},
-		{-1.7, 3.0, -7.5},
-		{1.3, -2.0, -2.5},
-		{1.5, 2.0, -2.5},
-		{1.5, 0.2, -1.5},
-		{-1.3, 1.0, -1.5},
-	}
+	objectPosition := mgl32.Translate3D(0, 0, 0)
+	modelLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("model\x00"))
+	gl.UniformMatrix4fv(modelLoc, 1, false, &objectPosition[0])
+	colorLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("objectColor\x00"))
+	gl.Uniform3f(colorLoc, 1.0, 0.5, 0.31)
 
+	checkError("aowkdoakwdo")
+	lightColorLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("lightColor\x00"))
+	gl.Uniform3f(lightColorLoc, 1.0, 1.0, 1.0)
+	gl.UseProgram(0)
+
+	// set for light shader
+	gl.UseProgram(lightShaderProgram.ID)
+
+	lightPosition := mgl32.Translate3D(0, 0, 3)
+	modelLoc = gl.GetUniformLocation(lightShaderProgram.ID, gl.Str("model\x00"))
+	gl.UniformMatrix4fv(modelLoc, 1, false, &lightPosition[0])
+
+	projection = mgl32.Perspective(mgl32.DegToRad(float32(fov)), 800.0/600.0, 0.1, 100.0)
+	projectionLoc = gl.GetUniformLocation(lightShaderProgram.ID, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionLoc, 1, false, &projection[0])
+
+	checkError("HAUUIU")
+	// fmt.Println(gl.GetError())
 	// Creating Camera View Matrix
 	// cameraPos := mgl32.Vec3{0, 0, 3}
 	// cameraTarget := mgl32.Vec3{0, 0, 0}
@@ -237,41 +272,43 @@ func main() {
 
 		// Update Position
 
-		modelLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("model\x00"))
 		viewLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("view\x00"))
 		view = mainCamera.GetLookUpMatrix()
 		gl.UniformMatrix4fv(viewLoc, 1, false, &view[0])
 
-		gl.ActiveTexture(gl.TEXTURE0)
-		boxTexture.Bind()
-		gl.ActiveTexture(gl.TEXTURE1)
-		faceTexture.Bind()
+		// gl.ActiveTexture(gl.TEXTURE0)
+		// boxTexture.Bind()
+		// gl.ActiveTexture(gl.TEXTURE1)
+		// faceTexture.Bind()
 
 		gl.BindVertexArray(VAO)
 		gl.UseProgram(shaderProgram.ID)
 		// gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
-		for i, pos := range cubePositions {
-			posMat := mgl32.Translate3D(pos.X(), pos.Y(), pos.Z())
-			var rotMat mgl32.Mat4
-			if i%3 == 0 {
-				rotMat = mgl32.HomogRotate3D(mgl32.DegToRad(float32(i)*20.0)+float32(glfw.GetTime()), mgl32.Vec3{1.0, 0.3, 0.5}.Normalize())
-			} else {
-				rotMat = mgl32.HomogRotate3D(mgl32.DegToRad(float32(i)*20.0), mgl32.Vec3{1.0, 0.3, 0.5}.Normalize())
-			}
-			model := posMat.Mul4(rotMat)
-			gl.UniformMatrix4fv(modelLoc, 1, false, &model[0])
-			gl.DrawArrays(gl.TRIANGLES, 0, 36)
-		}
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
+		// set for light shader
+		viewLoc = gl.GetUniformLocation(lightShaderProgram.ID, gl.Str("view\x00"))
+		view = mainCamera.GetLookUpMatrix()
+		gl.UniformMatrix4fv(viewLoc, 1, false, &view[0])
+
+		gl.BindVertexArray(lightVAO)
+		gl.UseProgram(lightShaderProgram.ID)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		gl.BindVertexArray(0)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
 
-		err := gl.GetError()
-		if err != gl.NO_ERROR {
-			log.Println(err)
-			panic(err)
-		}
+		checkError("UHUY")
+	}
+}
+func checkError(tag string) {
+
+	err := gl.GetError()
+	if err != gl.NO_ERROR {
+		fmt.Println(tag)
+		log.Println(err)
+		panic(err)
 	}
 }

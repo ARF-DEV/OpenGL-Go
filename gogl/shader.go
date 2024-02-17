@@ -85,7 +85,9 @@ func CreateShader(vertexShaderPath string, fragmentShaderPath string) (*Shader, 
 		fmt.Println(err)
 		return nil, err
 	}
+	// fmt.Println(string(vSource))
 	cStr, free := gl.Strs(string(vSource) + "\x00")
+	// fmt.Println(string(**cStr))
 	gl.ShaderSource(vertexId, 1, cStr, nil)
 	gl.CompileShader(vertexId)
 	if getShaderParam(vertexId, gl.COMPILE_STATUS) == gl.FALSE {
@@ -109,7 +111,7 @@ func CreateShader(vertexShaderPath string, fragmentShaderPath string) (*Shader, 
 		logLength := getShaderParam(fragmentId, gl.INFO_LOG_LENGTH)
 		log := strings.Repeat("\x00", int(logLength)+1)
 		gl.GetShaderInfoLog(fragmentId, logLength, nil, gl.Str(log))
-		return nil, errors.New("Failed while compiling vertex shader: " + log)
+		return nil, errors.New("Failed while compiling fragment shader: " + log)
 	}
 	free()
 	for e := gl.GetError(); e != 0; {
