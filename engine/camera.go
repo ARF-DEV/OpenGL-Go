@@ -19,6 +19,8 @@ const (
 	BACKWARD
 	LEFT
 	RIGHT
+	UP
+	DOWN
 )
 
 type Camera struct {
@@ -79,6 +81,12 @@ func (c *Camera) ProcessKeyboard(direction CameraMovement, deltaTime float32) {
 	}
 	if direction == LEFT {
 		c.Position = c.Position.Sub(c.Front.Cross(c.WorldUp).Normalize().Mul(velocity))
+	}
+	if direction == UP {
+		c.Position = c.Position.Add(c.WorldUp.Mul(velocity))
+	}
+	if direction == DOWN {
+		c.Position = c.Position.Sub(c.WorldUp.Mul(velocity))
 	}
 }
 

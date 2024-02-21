@@ -74,7 +74,7 @@ func main() {
 		mainCamera.ProcessMouseMovement(float32(xOffset), float32(yOffset))
 	})
 
-	window.SetScrollCallback(func(w *glfw.Window, xoff, yoff float64) {
+	window.SetScrollCallback(func(w *glfw.Window, xof, yoff float64) {
 		fov -= yoff
 		if fov < 1 {
 			fov = 1
@@ -97,49 +97,92 @@ func main() {
 		panic(err.Error())
 	}
 
+	// vertices := []float32{
+	// 	// positions  // texture coords
+	// 	-0.5, -0.5, -0.5, 0.0, 0.0,
+	// 	0.5, -0.5, -0.5, 1.0, 0.0,
+	// 	0.5, 0.5, -0.5, 1.0, 1.0,
+	// 	0.5, 0.5, -0.5, 1.0, 1.0,
+	// 	-0.5, 0.5, -0.5, 0.0, 1.0,
+	// 	-0.5, -0.5, -0.5, 0.0, 0.0,
+
+	// 	-0.5, -0.5, 0.5, 0.0, 0.0,
+	// 	0.5, -0.5, 0.5, 1.0, 0.0,
+	// 	0.5, 0.5, 0.5, 1.0, 1.0,
+	// 	0.5, 0.5, 0.5, 1.0, 1.0,
+	// 	-0.5, 0.5, 0.5, 0.0, 1.0,
+	// 	-0.5, -0.5, 0.5, 0.0, 0.0,
+
+	// 	-0.5, 0.5, 0.5, 1.0, 0.0,
+	// 	-0.5, 0.5, -0.5, 1.0, 1.0,
+	// 	-0.5, -0.5, -0.5, 0.0, 1.0,
+	// 	-0.5, -0.5, -0.5, 0.0, 1.0,
+	// 	-0.5, -0.5, 0.5, 0.0, 0.0,
+	// 	-0.5, 0.5, 0.5, 1.0, 0.0,
+
+	// 	0.5, 0.5, 0.5, 1.0, 0.0,
+	// 	0.5, 0.5, -0.5, 1.0, 1.0,
+	// 	0.5, -0.5, -0.5, 0.0, 1.0,
+	// 	0.5, -0.5, -0.5, 0.0, 1.0,
+	// 	0.5, -0.5, 0.5, 0.0, 0.0,
+	// 	0.5, 0.5, 0.5, 1.0, 0.0,
+
+	// 	-0.5, -0.5, -0.5, 0.0, 1.0,
+	// 	0.5, -0.5, -0.5, 1.0, 1.0,
+	// 	0.5, -0.5, 0.5, 1.0, 0.0,
+	// 	0.5, -0.5, 0.5, 1.0, 0.0,
+	// 	-0.5, -0.5, 0.5, 0.0, 0.0,
+	// 	-0.5, -0.5, -0.5, 0.0, 1.0,
+
+	// 	-0.5, 0.5, -0.5, 0.0, 1.0,
+	// 	0.5, 0.5, -0.5, 1.0, 1.0,
+	// 	0.5, 0.5, 0.5, 1.0, 0.0,
+	// 	0.5, 0.5, 0.5, 1.0, 0.0,
+	// 	-0.5, 0.5, 0.5, 0.0, 0.0,
+	// 	-0.5, 0.5, -0.5, 0.0, 1.0,
+	// }
 	vertices := []float32{
-		// positions  // texture coords
-		-0.5, -0.5, -0.5, 0.0, 0.0,
-		0.5, -0.5, -0.5, 1.0, 0.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		-0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
 
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 1.0,
-		0.5, 0.5, 0.5, 1.0, 1.0,
-		-0.5, 0.5, 0.5, 0.0, 1.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		-0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
 
-		-0.5, 0.5, 0.5, 1.0, 0.0,
-		-0.5, 0.5, -0.5, 1.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		-0.5, 0.5, 0.5, 1.0, 0.0,
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
+		-0.5, 0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, 0.5, -1.0, 0.0, 0.0,
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
 
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, 0.5, 0.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
 
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, -0.5, 1.0, 1.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
 
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		-0.5, 0.5, 0.5, 0.0, 0.0,
-		-0.5, 0.5, -0.5, 0.0, 1.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		-0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
 	}
 
 	indices := []uint32{ // note that we start from 0!
@@ -172,11 +215,11 @@ func main() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, VBO)
 	gl.BufferData(gl.ARRAY_BUFFER, 4*len(vertices), gl.Ptr(vertices), gl.STATIC_DRAW)
 
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 5*4, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6*4, nil)
 	gl.EnableVertexAttribArray(0)
 
-	// gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
-	// gl.EnableVertexAttribArray(1)
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*4, 3*4)
+	gl.EnableVertexAttribArray(1)
 
 	// gl.UseProgram(shaderProgram.ID)
 	// gl.Uniform1i(gl.GetUniformLocation(shaderProgram.ID, gl.Str("texture1\x00")), 0)
@@ -191,7 +234,7 @@ func main() {
 	var lightVAO uint32
 	gl.GenVertexArrays(1, &lightVAO)
 	gl.BindVertexArray(lightVAO)
-	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 5*4, 0)
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 6*4, 0)
 	// gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
 	gl.EnableVertexAttribArray(0)
 	// gl.EnableVertexAttribArray(1)
@@ -215,14 +258,20 @@ func main() {
 	checkError("aowkdoakwdo")
 	lightColorLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("lightColor\x00"))
 	gl.Uniform3f(lightColorLoc, 1.0, 1.0, 1.0)
-	gl.UseProgram(0)
 
+	lightPos := mgl32.Vec3{1.2, 1.0, 2.0}
+	lightTransform := mgl32.Translate3D(lightPos[0], lightPos[1], lightPos[2]).Mul4(mgl32.Scale3D(0.2, 0.2, 0.2))
+
+	// store light position
+	lightPosLoc := gl.GetUniformLocation(shaderProgram.ID, gl.Str("lightPos\x00"))
+	gl.Uniform3fv(lightPosLoc, 1, &lightPos[0])
+	checkError("APAANtuh")
+
+	gl.UseProgram(0)
 	// set for light shader
 	gl.UseProgram(lightShaderProgram.ID)
-
-	lightPosition := mgl32.Translate3D(0, 0, 3)
 	modelLoc = gl.GetUniformLocation(lightShaderProgram.ID, gl.Str("model\x00"))
-	gl.UniformMatrix4fv(modelLoc, 1, false, &lightPosition[0])
+	gl.UniformMatrix4fv(modelLoc, 1, false, &lightTransform[0])
 
 	projection = mgl32.Perspective(mgl32.DegToRad(float32(fov)), 800.0/600.0, 0.1, 100.0)
 	projectionLoc = gl.GetUniformLocation(lightShaderProgram.ID, gl.Str("projection\x00"))
@@ -261,6 +310,12 @@ func main() {
 		}
 		if window.GetKey(glfw.KeyD) == glfw.Press {
 			mainCamera.ProcessKeyboard(engine.RIGHT, float32(deltaTime))
+		}
+		if window.GetKey(glfw.KeySpace) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.UP, float32(deltaTime))
+		}
+		if window.GetKey(glfw.KeyLeftControl) == glfw.Press {
+			mainCamera.ProcessKeyboard(engine.DOWN, float32(deltaTime))
 		}
 
 		if window.GetKey(glfw.KeyEscape) == glfw.Press {
