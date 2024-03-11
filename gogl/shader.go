@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Shader struct {
@@ -182,4 +183,13 @@ func (s *Shader) SetUniformFloat(name string, value float32) {
 
 func (s *Shader) SetUniformInt(name string, value int32) {
 	gl.Uniform1i(gl.GetUniformLocation(s.ID, gl.Str(name+"\x00")), value)
+}
+
+func (s *Shader) SetVec3(name string, value mgl32.Vec3) {
+
+	gl.Uniform3fv(gl.GetUniformLocation(s.ID, gl.Str(name+"\x00")), 1, &value[0])
+}
+func (s *Shader) SetInt(name string, value int) {
+
+	gl.Uniform1i(gl.GetUniformLocation(s.ID, gl.Str(name+"\x00")), int32(value))
 }
